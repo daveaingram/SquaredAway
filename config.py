@@ -21,3 +21,6 @@ PLATFORM_HEIGHT = 20
 # Enemy configuration
 ENEMY_SPEED = 2
 
+# Pickups
+PICKUP_SIZE = 20
+MAX_PICKUPS = 5

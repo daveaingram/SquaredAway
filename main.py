@@ -1,12 +1,13 @@
 import pygame
 import sys
-from config import WINDOW_SIZE, FPS, PLAYER_START_POS, STARTING_PLATFORM_POS, BLACK
 from player import Player
 from game_platform import Platform
 from enemy import Enemy
 from menu import Menu
 import random
 import pygame.time
+from pickup import Pickup
+from config import WINDOW_SIZE, FPS, PLAYER_START_POS, STARTING_PLATFORM_POS, BLACK, PICKUP_SIZE, MAX_PICKUPS
 
 pygame.init()
 screen = pygame.display.set_mode(WINDOW_SIZE)
@@ -14,7 +15,7 @@ pygame.display.set_caption("Side Scroller Game")
 clock = pygame.time.Clock()
 
 ENEMY_SPAWN_EVENT = pygame.USEREVENT + 1
-
+PICKUP_SPAWN_EVENT = pygame.USEREVENT + 2
 
 def initialize_game_objects():
     player = Player(PLAYER_START_POS)
@@ -66,6 +67,22 @@ def draw_text(surface, text, size, color, x, y):
     surface.blit(text_surface, text_rect)
 
 
+def spawn_pickup(pickups, platforms):
+    platform = random.choice(platforms)
+    x = random.randint(platform.rect.x, platform.rect.x + platform.rect.width - PICKUP_SIZE)
+    y = platform.rect.y - PICKUP_SIZE
+    pickups.append(Pickup((x, y)))
+
+
+
+def player_picks_up_pickup(player, pickups):
+    for pickup in pickups:
+        if player.rect.colliderect(pickup.rect):
+            pickups.remove(pickup)
+            return True
+    return False
+
+
 def main():
     menu = Menu(screen)
 
@@ -76,6 +93,9 @@ def main():
 
     score = 0
     score_timer = 0
+
+    pickups = []
+    pygame.time.set_timer(PICKUP_SPAWN_EVENT, 2000)
 
     while True:
 
@@ -93,6 +113,10 @@ def main():
             if playing_game and event.type == ENEMY_SPAWN_EVENT:
                 spawn_enemy(player, enemies)
 
+            if playing_game and event.type == PICKUP_SPAWN_EVENT:
+                if len(pickups) < MAX_PICKUPS:
+                    spawn_pickup(pickups, platforms)
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     playing_game = True
@@ -105,21 +129,31 @@ def main():
             # Remove off-screen enemies
             enemies = [enemy for enemy in enemies if not is_off_screen(enemy)]
 
-            score_timer += delta_time
-            if score_timer >= 1000:  # Increment score every 1000 milliseconds (1 second)
-                score += 1
-                score_timer = 0
+            # score_timer += delta_time
+            # if score_timer >= 1000:  # Increment score every 1000 milliseconds (1 second)
+            #     score += 1
+            #     score_timer = 0
 
+            if player_picks_up_pickup(player, pickups):
+                score += 1
+
+            # PAINT THE SCREEN
             screen.fill(BLACK)
             screen.blit(player.image, player.rect)
+            
             for platform in platforms:
                 screen.blit(platform.image, platform.rect)
+            
             for enemy in enemies:
                 screen.blit(enemy.image, enemy.rect)
+
+            for pickup in pickups:
+                screen.blit(pickup.image, pickup.rect)
 
             draw_text(screen, f"Score: {score}", 36, (255, 255, 255), 10, 10)
             pygame.display.flip()
 
+            # END GAME CONDITION
             if player.rect.y > WINDOW_SIZE[1] or player_collides_with_enemy(player, enemies):
                 playing_game = False
                 menu.display_game_over_menu(score)
