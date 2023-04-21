@@ -1,0 +1,23 @@
+# Game window configuration
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 600
+WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
+FPS = 60
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Player configuration
+PLAYER_START_POS = (50, 450)
+STARTING_PLATFORM_POS = (0, 500)
+PLAYER_SPEED = 5
+PLAYER_JUMP_HEIGHT = 15
+
+# Platform configuration
+PLATFORM_WIDTH = 100
+PLATFORM_HEIGHT = 20
+
+# Enemy configuration
+ENEMY_SPEED = 2
+
